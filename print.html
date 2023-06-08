@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Custom Label Printing</title>
+  <style>
+    @media print {
+      .label {
+        padding: 1mm;
+        margin-bottom: 1mm;
+        border: 1px solid black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .labelContainer {
+        display: inline-block;
+        text-align: center;
+      }
+      .row {
+        display: flex;
+      }
+      .page {
+        margin: 0;
+      }
+    }
+    
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+</head>
+<body>
+  <form>
+    <label for="labelSpacing">Label Space:</label>
+    <input type="text" id="labelSpacing" name="labelSpacing" value="2">
+    <label for="width">Label Width:</label>
+    <input type="text" id="width" name="width" placeholder="Enter width" value="50" required>
+    <label for="height">Label Height:</label>
+    <input type="text" id="height" name="height" placeholder="Enter height" value="25" required>
+    <label for="row">Number of Rows:</label>
+    <input type="number" id="row" value="1">
+    <label for="column">Number of Columns:</label>
+    <input type="number" id="column" value="1">
+    <label for="padding">Label Padding:</label>
+    <input type="number" id="padding" value="1">
+    <label for="productName">Product Name:</label>
+    <input type="text" id="productName" value="APPLE">
+    <label for="storeName">Store Name:</label>
+    <input type="text" id="storeName" value="ABC STORE">
+    <label for="barcodeValue">Barcode:</label>
+    <input type="text" id="barcodeValue" value="1234567890128">
+    <label for="price">Price:</label>
+    <input type="text" id="price" value="200">
+    <label for="logo">Logo:</label>
+    <select name="logo" id="logo">
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+    <label for="storeNameYes">Store Name:</label>
+    <select name="storeNameYes" id="storeNameYes">
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+    <button type="button" onclick="generateLabels()">Generate Labels</button>
+  </form>
+
+  <div id="labelContainer" hidden></div>
+
+  <script>
+   function generateLabels() {
+  var labelWidth = parseInt(document.getElementById('width').value) - 2 + 'mm';
+  var labelHeight = parseInt(document.getElementById('height').value) - 3 + 'mm';
+  var numRows = document.getElementById('row').value;
+  var numColumns = document.getElementById('column').value;
+  var productName = document.getElementById('productName').value;
+  var storeName = document.getElementById('storeName').value;
+  var barcodeValue = document.getElementById('barcodeValue').value;
+  var price = document.getElementById('price').value;
+  var labelContainer = document.getElementById('labelContainer');
+  var padding = document.getElementById('padding').value;
+  var labelSpacing = document.getElementById('labelSpacing').value;
+  labelContainer.innerHTML = '';
+
+  if (labelWidth && labelHeight && numRows && numColumns) {
+    for (var i = 0; i < numRows; i++) {
+      var row = document.createElement('div');
+      row.className = 'row';
+
+      for (var j = 0; j < numColumns; j++) {
+        var label = document.createElement('div');
+        label.className = 'label';
+        label.style.width = labelWidth;
+        label.style.height = labelHeight;
+        label.style.padding = padding + 'mm';
+        label.style.marginRight = labelSpacing ;
+        label.style.marginTop = labelSpacing;
+        label.style.border = '1px solid black';
+        label.style.boxSizing = 'border-box';
+
+        if(i!=0)
+        {label.style.marginTop = parseInt(labelSpacing/2) + 'mm';
+
+        }
+        if (j != 0) {
+          label.style.marginLeft = labelSpacing + 'mm';
+        }
+        var innerContent = document.createElement('div');
+        innerContent.className = 'inner-content';
+        innerContent.style.display = 'flex';
+        innerContent.style.flexDirection = 'column';
+        innerContent.style.justifyContent = 'center';
+        innerContent.style.height = '100%';
+        label.appendChild(innerContent);
+
+        if (document.getElementById('storeNameYes').value === 'Yes') {
+          var storeAndProductName = document.createElement('p');
+          storeAndProductName.style.textAlign = 'center';
+          storeAndProductName.style.margin = '0';
+          storeAndProductName.style.fontSize = '11px';
+          storeAndProductName.style.maxHeight = '30%';
+          storeAndProductName.innerText = storeName;
+          innerContent.appendChild(storeAndProductName);
+        }
+
+        var barcodeWrapper = document.createElement('div');
+        barcodeWrapper.style.display = 'flex';
+        barcodeWrapper.style.justifyContent = 'center';
+        barcodeWrapper.style.alignItems = 'center';
+        barcodeWrapper.style.flexGrow = '1';
+        innerContent.appendChild(barcodeWrapper);
+
+        if (document.getElementById('logo').value === 'Yes') {
+          var storeLogo = document.createElement('img');
+          storeLogo.src = '../PRINT/abc.png'; // Replace with the actual path to your store logo
+          storeLogo.style.maxWidth = '20%';
+          storeLogo.style.height = 'auto';
+          barcodeWrapper.appendChild(storeLogo);
+        }
+
+        var barcodeImage = document.createElement('img');
+        JsBarcode(barcodeImage, barcodeValue, {
+          format: 'ean13',
+          displayValue: true,
+          width: 2,
+          height: 30,
+        });
+        barcodeImage.style.maxWidth = '80%';
+        barcodeImage.style.height = 'auto';
+        barcodeWrapper.appendChild(barcodeImage);
+
+        var productNames = document.createElement('p');
+        productNames.style.textAlign = 'center';
+        productNames.style.margin = '0';
+        productNames.style.fontSize = '10px';
+        productNames.innerText = productName + ' 1 KG';
+        innerContent.appendChild(productNames);
+
+        var priceLabel = document.createElement('p');
+        priceLabel.style.textAlign = 'center';
+        priceLabel.style.margin = '0';
+        priceLabel.style.maxHeight = '30%';
+        // priceLabel.style.overflow = 'hidden';
+        priceLabel.style.textOverflow = 'ellipsis';
+        priceLabel.style.whiteSpace = 'nowrap';
+        priceLabel.style.fontSize = '12px';
+        priceLabel.innerText = 'MRP ₹' + price;
+        innerContent.appendChild(priceLabel);
+
+        row.appendChild(label);
+      }
+
+      labelContainer.appendChild(row);
+    }
+    printLabels();
+}
+
+
+        // Adjust layout for printing a single label
+        if (numRows === '1' && numColumns === '1') {
+          var labelStyles = document.createElement('style');
+          labelStyles.innerText = `@media print {
+            .label {
+              width: ${labelWidth};
+              height: ${labelHeight};
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
+              box-sizing: border-box;
+            }
+
+            .row {
+              justify-content: center;
+            }
+          }`;
+
+          document.head.appendChild(labelStyles);
+        }
+    }
+    function printLabels() {
+  var labelContainer = document.getElementById('labelContainer');
+  var numRows = document.getElementById('row').value;
+  var numColumns = document.getElementById('column').value;
+
+  // Calculate the alignment based on the number of columns
+  var alignCenter = numColumns === '1' ? 'center' : 'flex-start';
+
+  var printWindow = window.open('', '_blank');
+      
+ 
+  printWindow.document.open();
+  printWindow.document.write('<html><head><title>Print Labels</title><style>@media print {.row {page-break-after: always;}    .label {width: 50mm; height: 25mm; display: inline-block; padding: 1mm; margin-bottom: 1mm; border: 1px solid black; text-align: center; box-sizing: border-box; }} .labelContainer {display: inline-block; text-align: ' + alignCenter + ';} .row {display: flex; justify-content: space-between;} .page {margin: 0;} body{display: flex; flex-direction: row; justify-content: center;}</style></head><body><div class="page">' + labelContainer.innerHTML + '</div></body></html>');
+  printWindow.document.close();
+  printWindow.print();
+}
+
+    // Add event listener to the print button
+var printButton = document.getElementById('printButton');
+printButton.addEventListener('click', printLabels);
+</script>
+</body>
+</html>
+
